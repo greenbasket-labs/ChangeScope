@@ -429,3 +429,27 @@ AMBIGUOUS / NEEDS MORE EVIDENCE
 ```
 
 Implementation beyond those validation artifacts remains deferred until the larger sample is evaluated.
+
+
+---
+
+## 23. Validation fixture corpus created
+
+A first fixture corpus has now been added under `tests/fixtures/`.
+
+It deliberately contains both positive and negative cases:
+
+- AWS S3 write
+- GitHub Actions repository write permission
+- AWS OIDC + ECS production deployment
+- external S3/media HTTP integration
+- database read -> write plus service-role secret
+- existing S3 capability preserved through refactoring
+- existing shell execution with changed semantics
+- documentation-only change
+
+Each fixture includes an expected classification and inspectable evidence patterns.
+
+The corpus is intentionally small and representative. It is **not** being treated as proof of detector precision yet.
+
+Next validation work is to expand the real-PR sample and use these fixtures to formalize the evidence model before implementing a production detector.
