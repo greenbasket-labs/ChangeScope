@@ -1,0 +1,9 @@
+{
+  "classification": "AMBIGUOUS",
+  "capabilities": ["SHELL_EXECUTION"],
+  "state": "CHANGED",
+  "evidence": [
+    {"path": "runner.rs", "kind": "execution", "pattern": "resolve_shell"}
+  ],
+  "note": "The runner already executes shell commands. Materiality depends on base behavior and newly reachable execution paths."
+}
