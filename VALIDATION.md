@@ -167,3 +167,265 @@ The ambiguous cases are especially valuable because they will define the limits 
 **Implementation:** still intentionally deferred.
 
 **Next step:** expand the empirical sample and build a small fixture corpus from the observed patterns.
+
+
+---
+
+## 19. Third validation batch: permissions, deployment, external storage, and negative cases
+
+The next sample was chosen to test whether the emerging model survives outside the first examples.
+
+### Deployment permission grant
+
+**Repository:** davidcollom/vcc-ical  
+**PR:** #74  
+**URL:** https://github.com/davidcollom/vcc-ical/pull/74
+
+The inspected patch adds:
+
+```yaml
+permissions:
+  contents: read
+  deployments: write
+```
+
+The important observation is that this is not application logic. It changes the authority of the GitHub Actions workflow.
+
+Candidate representation:
+
+```text
+ADDED / MATERIAL
++ REPOSITORY_READ
++ DEPLOYMENT_WRITE
+```
+
+The exact capability vocabulary should remain aligned with `SPEC.md`; the validation result here is the evidence pattern: a three-line workflow change can create a meaningful automation privilege.
+
+### Production deployment path
+
+**Repository:** Patheya-express/patheya-express-platform  
+**PR:** #28  
+**URL:** https://github.com/Patheya-express/patheya-express-platform/pull/28
+
+The inspected patch adds a production ECS deployment workflow. Evidence includes:
+
+- `id-token: write`
+- AWS OIDC role assumption
+- ECR login
+- ECS task-definition revision
+- migration task execution
+- API and worker service updates
+- production GitHub Environment
+
+Candidate representation:
+
+```text
+ADDED
++ AWS_DEPLOY
++ CI_EXECUTION
++ CLOUD_WRITE
++ PRODUCTION_DEPLOYMENT
+```
+
+This is a strong repository-level example because no single application function explains the new power. The capability is distributed across workflow configuration, cloud identity, deployment commands, and environment configuration.
+
+### External S3 media integration
+
+**Repository:** langfuse/langfuse  
+**PR:** #18320  
+**URL:** https://github.com/langfuse/langfuse/pull/18320
+
+The inspected patch adds a project-scoped external media storage integration with S3/S3-compatible storage.
+
+Evidence includes:
+
+- a new database model for external media storage integrations
+- S3/S3-compatible configuration
+- external endpoint validation
+- MCP tools for lookup/configure/delete/test
+- signed media/object handling in the broader PR
+
+Candidate representation:
+
+```text
+ADDED
++ EXTERNAL_HTTP
++ AWS_WRITE / external object-storage write
++ UPLOAD_DATA / external data movement
+```
+
+The exact AWS-vs-generic-S3 classification needs evidence from the concrete provider path; the fixture should not infer AWS merely because the protocol is S3-compatible.
+
+This is another reason the capability engine needs **evidence references plus confidence**, rather than a single opaque label.
+
+### CI database write and secret privilege
+
+**Repository:** MattyBalaam/shorpin  
+**PR:** #120  
+**URL:** https://github.com/MattyBalaam/shorpin/pull/120
+
+The inspected patch changes a scheduled GitHub Actions keepalive from an anonymous/read-only Supabase request to a service-role write:
+
+```text
+BEFORE
+anon/publishable key
+database read
+
+AFTER
+SUPABASE_SERVICE_ROLE_KEY
+database INSERT
+database DELETE
+```
+
+Candidate representation:
+
+```text
+MATERIAL CHANGE
++ READ_DATABASE -> WRITE_DATABASE
++ READ_ENVIRONMENT / READ_SECRET
++ CI_EXECUTION
+```
+
+This is a particularly valuable example for the delta model because the meaningful change is a **privilege transition**, not simply a new API call.
+
+### Large S3/storage refactor — negative case
+
+**Repository:** fitzroywright/Common.Storage  
+**PR:** #7  
+**URL:** https://github.com/fitzroywright/Common.Storage/pull/7
+
+The inspected patch replaces the implementation of an existing Amazon S3 adapter with delegation to a provider-neutral implementation and adds tests/configuration coverage.
+
+This is useful as a negative or ambiguous case.
+
+The patch is large and touches cloud-storage code, but the evidence shown does not establish that the resulting system gained a new external capability. It may instead preserve an existing capability behind a refactored implementation.
+
+Validation classification:
+
+```text
+LIKELY NO NEW CAPABILITY
+or
+MATERIALITY = UNCHANGED
+```
+
+This guards against the naive rule:
+
+> "Cloud-related code changed" => "new cloud capability."
+
+### Shell runner feature — changed capability semantics, not automatically added power
+
+**Repository:** Falconiere/toolu-ghrunner  
+**PR:** #141  
+**URL:** https://github.com/Falconiere/toolu-ghrunner/pull/141
+
+The inspected patch adds custom shell-template support, interpreter resolution, quoting behavior, and container/host shell routing.
+
+This is not automatically an `SHELL_EXECUTION` **addition**, because the runner already executed shell commands.
+
+It is better treated as:
+
+```text
+CAPABILITY = existing
+STATE = CHANGED
+```
+
+Possible materiality depends on what execution paths were reachable before and after the patch.
+
+This reinforces the SPEC requirement that ChangeScope report **added, removed, and materially changed** capabilities rather than only additions.
+
+---
+
+## 20. Third-batch findings
+
+The new evidence strengthens several conclusions.
+
+### 20.1 Configuration is first-class evidence
+
+The deployment and permission examples show that capability changes can be introduced almost entirely through YAML and environment/configuration.
+
+### 20.2 Capability delta must model privilege transitions
+
+The Supabase example demonstrates that:
+
+```text
+read -> write
+anonymous -> service-role
+manual -> automated
+```
+
+can be more meaningful than the number of changed files.
+
+### 20.3 Existing capability vs new capability must be distinguished
+
+The storage refactor and shell-runner examples show why "feature-looking" PRs cannot all be classified as additions.
+
+### 20.4 Evidence must remain provider-specific
+
+S3 protocol support does not prove AWS specifically. A capability finding must identify the concrete provider/path when the evidence supports it and otherwise remain generic.
+
+### 20.5 Repository-level analysis is now strongly justified
+
+Across the third batch, meaningful evidence appears in:
+
+```text
+source code
+configuration
+GitHub Actions permissions
+environment variables
+cloud deployment workflows
+database migrations
+MCP/tool policy
+infrastructure documentation
+```
+
+The V0 model therefore remains repository-level and evidence-first.
+
+---
+
+## 21. Updated sample matrix
+
+The empirical set currently covers at least these categories:
+
+| Pattern | Example | Preliminary classification |
+|---|---|---|
+| External cloud storage | tomoji #73 | capability added |
+| S3/cloud integration | sentry-python #7888 | capability added |
+| Payment provider | FoodService #49 | capability added |
+| GitHub workflow write permission | vault-secrets-operator #28 | capability added/material |
+| Shell execution | agentcore-cli #2548 | capability added |
+| AWS production deployment | theCourseForum2 #1310 | capability added |
+| Deployment permission | vcc-ical #74 | capability added/material |
+| Production ECS deployment | patheya-express #28 | capability added |
+| External S3 media | langfuse #18320 | capability added |
+| Database read -> write + service role | shorpin #120 | material capability change |
+| Storage implementation refactor | Common.Storage #7 | likely no new capability |
+| Shell runner semantics | toolu-ghrunner #141 | changed capability / ambiguous materiality |
+| Refactor | mupen64 #1067 | likely no new capability |
+| Misleading database title | Backend-Web-Development #329 | ambiguous / no clean evidence |
+
+This is still a small empirical set relative to the planned 50–100 PR V0 sample.
+
+---
+
+## 22. Decision after third batch
+
+**Do not build the GitHub App yet.**
+
+The evidence is now strong enough to justify building only the smallest validation artifact needed next:
+
+1. a representative fixture corpus;
+2. a capability-core data model;
+3. deterministic evidence-to-capability tests;
+4. no GitHub webhook/app/presentation layer yet.
+
+The fixture corpus should preserve the observed distinction between:
+
+```text
+CAPABILITY ADDED
+CAPABILITY REMOVED
+CAPABILITY CHANGED
+NO CAPABILITY CHANGE
+AMBIGUOUS / NEEDS MORE EVIDENCE
+```
+
+Implementation beyond those validation artifacts remains deferred until the larger sample is evaluated.
