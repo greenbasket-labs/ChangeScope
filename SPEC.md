@@ -1,7 +1,7 @@
 # ChangeScope Specification
 
 **Status:** Normative  
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Scope:** Product, domain model, behavior and architectural boundaries
 
 > This document is the engineering source of truth for ChangeScope.
@@ -123,6 +123,7 @@ The initial vocabulary is intentionally limited.
 ## 4.4 GitHub
 
 - `REPOSITORY_READ`
+- `REPOSITORY_WRITE`
 - `ISSUE_WRITE`
 - `PR_WRITE`
 - `PR_MERGE`
@@ -148,28 +149,120 @@ New capabilities require a demonstrated need or validation evidence. Do not expa
 
 # 5. Evidence model
 
-A capability finding MUST be explainable by evidence.
+A capability finding MUST be explainable by one or more inspectable evidence records.
 
-Evidence may include:
+The evidence layer answers:
 
-- source code
-- AST patterns
-- imports
-- function calls
-- configuration
-- dependency manifests
-- lockfiles
-- Dockerfiles
-- GitHub Actions
-- environment references
-- permissions
-- infrastructure definitions
-- repository history
-- declared ChangeScope rules
+> **What observable repository fact supports this finding?**
 
-An LLM response alone is not sufficient evidence.
+The capability layer answers:
 
-AI may summarize, correlate or explain existing evidence, but the deterministic/evidence layer must remain independently understandable.
+> **What system capability does that evidence represent?**
+
+These are separate responsibilities.
+
+## 5.1 Evidence record
+
+The normative evidence record contains:
+
+- stable evidence identifier
+- repository-relative path or artifact identifier
+- source kind
+- location when available
+- observed pattern or normalized fact
+- candidate capability or capability transition when known
+- detector identifier
+- confidence
+- evidence quality
+- concise explanation
+
+Conceptual form:
+
+```json
+{
+  "id": "ev_001",
+  "path": ".github/workflows/publish.yml",
+  "kind": "permission",
+  "location": {"startLine": 5, "endLine": 5},
+  "pattern": "contents: write",
+  "capability": "REPOSITORY_WRITE",
+  "detector": "github-actions.permissions",
+  "confidence": "HIGH",
+  "quality": "DIRECT",
+  "explanation": "Workflow grants GITHUB_TOKEN write access to repository contents."
+}
+```
+
+The exact serialization may evolve, but the semantics are normative.
+
+## 5.2 Evidence kinds
+
+Initial evidence kinds are:
+
+- `source`
+- `ast_pattern`
+- `import`
+- `call`
+- `configuration`
+- `dependency`
+- `lockfile`
+- `dockerfile`
+- `permission`
+- `secret_reference`
+- `command`
+- `infrastructure`
+- `history`
+- `rule`
+
+New evidence kinds should be added only when real validation requires them.
+
+## 5.3 Location
+
+Evidence SHOULD include a precise source location whenever the artifact supports one:
+
+- start line
+- end line
+- optionally start/end column
+
+For structured artifacts without stable line information, the evidence may identify the relevant key, field, or artifact path instead.
+
+A finding without a precise location MAY be valid when the underlying artifact itself is the evidence, but the result must explain why.
+
+## 5.4 Evidence quality
+
+Initial evidence quality levels are:
+
+- `DIRECT`: the observed fact directly expresses the relevant capability, such as a permission, explicit command, or known API operation.
+- `STRONG`: the observed fact strongly indicates the capability but requires a small amount of interpretation, such as a known SDK abstraction.
+- `INDIRECT`: the fact is relevant but does not independently establish the capability.
+- `AMBIGUOUS`: multiple plausible interpretations remain.
+
+Evidence quality MUST NOT be silently upgraded by an LLM.
+
+## 5.5 Confidence
+
+Confidence describes the detector's conclusion from the available evidence:
+
+- `HIGH`
+- `MEDIUM`
+- `LOW`
+
+Confidence is not a security guarantee and MUST be explainable from the evidence records.
+
+## 5.6 Evidence rules
+
+The following are normative:
+
+1. A PR title, commit message, filename, or prose description alone MUST NOT establish a capability.
+2. An LLM response alone MUST NOT establish a capability.
+3. Capability findings MUST reference their supporting evidence records.
+4. Evidence MUST be inspectable by a human from the repository artifact and location where possible.
+5. A detector MUST NOT claim provider-specific capability from generic protocol syntax alone. For example, an S3-compatible URL does not by itself prove AWS access.
+6. A permission that grants a broader access level MUST be represented by the actual permission semantics, not by a guessed downstream action. For example, GitHub Actions `contents: write` is repository-content write access; it MUST NOT be normalized to `PR_WRITE` unless separate evidence establishes pull-request write capability.
+7. A write permission includes read access at the GitHub Actions permission level, but the delta MUST report the materially new write capability rather than duplicating an already-present read capability.
+8. Evidence records SHOULD preserve commit SHA or equivalent repository version context when stored outside the analyzed run.
+
+An LLM may summarize, correlate, or explain existing evidence, but it remains downstream of the evidence layer.
 
 ---
 
@@ -713,6 +806,22 @@ A change to this specification MUST include:
 Major product changes should be reviewed before implementation.
 
 ---
+
+## 27.1 Evidence-model amendment record
+
+This 0.2.0 amendment was made before implementing capability-core.
+
+**Reason:** the repository had fixture evidence but the specification did not define a sufficiently precise, inspectable evidence record.
+
+**Problem evidence:** validation fixtures already use imports, calls, permissions, configuration, and infrastructure as evidence, while some fixture expectations were too coarse. In particular, the GitHub Actions `contents: write` fixture incorrectly mapped repository-content write permission to `PR_WRITE`.
+
+**Affected scope:** evidence records, initial GitHub capability vocabulary, fixture expectations, and capability-core domain types. No GitHub App or parser behavior is introduced by this amendment.
+
+**Compatibility:** existing capability states and categories remain valid. The vocabulary gains `REPOSITORY_WRITE`; existing consumers of `REPOSITORY_READ` remain valid.
+
+**Implementation impact:** capability-core will model evidence as first-class data and will not depend on GitHub APIs or parser implementations.
+
+**Test plan:** update the affected fixture and add deterministic domain tests for evidence validation, capability records, and base/head delta behavior.
 
 # 28. Development sequence
 
