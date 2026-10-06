@@ -5,7 +5,7 @@ These fixtures are validation evidence, not production detector logic.
 | Fixture | Expected classification | Main evidence |
 |---|---|---|
 | aws-s3-upload | capability added | S3 client + object upload |
-| github-actions-write | capability added/material | contents: write |
+| github-actions-write | capability added/material | contents: write → REPOSITORY_WRITE |
 | production-aws-oidc-ecs | capability added | OIDC + AWS role + ECS deployment |
 | external-s3-media | capability added | external HTTP + object-storage configuration |
 | database-read-to-write | capability changed | service-role secret + POST/DELETE |
@@ -16,3 +16,5 @@ These fixtures are validation evidence, not production detector logic.
 Classification vocabulary: CAPABILITY_ADDED, CAPABILITY_REMOVED, CAPABILITY_CHANGED, NO_CAPABILITY_CHANGE, AMBIGUOUS.
 
 The fixture corpus is evidence-first. A filename, PR title, or prose label is never sufficient to establish a capability.
+
+The `github-actions-write` case is intentionally repository-content write, not `PR_WRITE`. GitHub Actions permission semantics must be represented directly unless separate evidence establishes a more specific capability.
