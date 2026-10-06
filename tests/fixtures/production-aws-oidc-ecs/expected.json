@@ -1,0 +1,10 @@
+{
+  "classification": "CAPABILITY_ADDED",
+  "capabilities": ["AWS_DEPLOY", "CI_EXECUTION", "DEPLOYMENT"],
+  "evidence": [
+    {"path": "workflow.yml", "kind": "permission", "pattern": "id-token: write"},
+    {"path": "workflow.yml", "kind": "call", "pattern": "configure-aws-credentials"},
+    {"path": "workflow.yml", "kind": "command", "pattern": "aws ecs update-service"},
+    {"path": "workflow.yml", "kind": "environment", "pattern": "environment: production"}
+  ]
+}
