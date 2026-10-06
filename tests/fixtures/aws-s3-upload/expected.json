@@ -1,0 +1,8 @@
+{
+  "classification": "CAPABILITY_ADDED",
+  "capabilities": ["AWS_WRITE", "UPLOAD_DATA"],
+  "evidence": [
+    {"path": "patch.ts", "kind": "import", "pattern": "@aws-sdk/client-s3"},
+    {"path": "patch.ts", "kind": "call", "pattern": "PutObjectCommand"}
+  ]
+}
