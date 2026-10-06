@@ -1,7 +1,13 @@
 {
   "classification": "CAPABILITY_ADDED",
-  "capabilities": ["REPOSITORY_READ", "PR_WRITE"],
+  "capabilities": ["REPOSITORY_WRITE"],
   "evidence": [
-    {"path": "workflow.yml", "kind": "permission", "pattern": "contents: write"}
+    {
+      "path": "workflow.yml",
+      "kind": "permission",
+      "pattern": "contents: write",
+      "capability": "REPOSITORY_WRITE",
+      "quality": "DIRECT"
+    }
   ]
 }
