@@ -1,0 +1,13 @@
+name: keepalive
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - run: node scripts/keepalive.mjs
+        env:
+          DATABASE_SERVICE_ROLE_KEY: ${{ secrets.DATABASE_SERVICE_ROLE_KEY }}
