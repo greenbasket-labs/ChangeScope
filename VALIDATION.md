@@ -453,3 +453,52 @@ Each fixture includes an expected classification and inspectable evidence patter
 The corpus is intentionally small and representative. It is **not** being treated as proof of detector precision yet.
 
 Next validation work is to expand the real-PR sample and use these fixtures to formalize the evidence model before implementing a production detector.
+
+---
+## 24. Evidence model and capability-core implemented
+
+The next validation artifact is now implemented without adding the GitHub App or parser.
+
+### Normative model
+
+SPEC.md v0.2.0 now defines:
+
+- first-class evidence records;
+- evidence kinds;
+- source locations;
+- evidence quality;
+- confidence;
+- detector identity;
+- provider-specific evidence requirements;
+- the rule that titles, filenames, prose, and LLM output alone cannot establish a capability.
+
+The specification also corrected the GitHub Actions fixture semantics: "contents: write" is represented as REPOSITORY_WRITE, not PR_WRITE. GitHub documents contents: write as write access to repository contents, with write including read at the permission level.
+
+### Capability-core boundary
+
+The first core implementation now contains:
+
+- normalized capability vocabulary;
+- evidence construction and validation;
+- capability record construction and validation;
+- stable capability identity;
+- base/head delta calculation;
+- added, removed, and changed capability states.
+
+It has no GitHub API dependency and no parser dependency.
+
+### Deterministic tests
+
+tests/capability-core.test.mjs covers:
+
+- first-class inspectable evidence;
+- invalid evidence rejection;
+- evidence requirement for non-unchanged findings;
+- repository-write permission semantics;
+- added capability detection;
+- material capability change detection;
+- unchanged capability producing no delta.
+
+The GitHub-connected environment used to edit the repository does not provide a local repository checkout for executing node --test, so runtime execution remains a local validation step rather than being claimed here as passed.
+
+The project therefore remains at V0 empirical validation. The next gate is to execute the deterministic tests locally, reconcile any failures, then expand the real-PR sample toward the planned 50–100 cases.
