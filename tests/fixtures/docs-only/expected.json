@@ -1,0 +1,7 @@
+{
+  "classification": "NO_CAPABILITY_CHANGE",
+  "capabilities": [],
+  "evidence": [
+    {"path": "README.md", "kind": "documentation", "pattern": "Deployment"}
+  ]
+}
