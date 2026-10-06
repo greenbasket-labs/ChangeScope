@@ -1,0 +1,10 @@
+{
+  "classification": "CAPABILITY_CHANGED",
+  "capabilities": ["READ_SECRET", "WRITE_DATABASE", "DELETE_DATABASE", "CI_EXECUTION"],
+  "material_change": "read_to_write",
+  "evidence": [
+    {"path": "workflow.yml", "kind": "secret_reference", "pattern": "DATABASE_SERVICE_ROLE_KEY"},
+    {"path": "keepalive.mjs", "kind": "http_method", "pattern": "POST"},
+    {"path": "keepalive.mjs", "kind": "http_method", "pattern": "DELETE"}
+  ]
+}
