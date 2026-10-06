@@ -1,0 +1,9 @@
+{
+  "classification": "NO_CAPABILITY_CHANGE",
+  "capabilities": ["AWS_WRITE"],
+  "state": "UNCHANGED",
+  "evidence": [
+    {"path": "adapter.cs", "kind": "delegation", "pattern": "inner.StoreAsync"}
+  ],
+  "note": "Existing storage capability is preserved behind a refactored adapter."
+}
