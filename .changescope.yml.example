@@ -1,0 +1,25 @@
+# Example ChangeScope repository policy.
+#
+# Copy this file to .changescope.yml and adapt it to your repository.
+# Policy is advisory in the initial ChangeScope versions.
+
+rules:
+
+  # Prevent frontend code from directly acquiring database access.
+  - name: no-frontend-database
+    from: frontend
+    deny:
+      - database
+
+  # Keep payment-provider access behind the payment boundary.
+  - name: payment-boundary
+    from: frontend
+    deny:
+      - stripe
+
+  # Treat production deployment as a human-reviewed capability.
+  - name: production-deploy
+    capability:
+      - deployment
+    require:
+      human_approval: true
