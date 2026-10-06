@@ -266,6 +266,7 @@ The first implementation should use a small, explicit vocabulary.
 ### GitHub
 
 - `REPOSITORY_READ`
+- `REPOSITORY_WRITE`
 - `ISSUE_WRITE`
 - `PR_WRITE`
 - `PR_MERGE`
