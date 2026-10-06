@@ -1,0 +1,9 @@
+{
+  "classification": "CAPABILITY_ADDED",
+  "capabilities": ["EXTERNAL_HTTP", "SEND_EXTERNAL_DATA"],
+  "evidence": [
+    {"path": "feature.ts", "kind": "network", "pattern": "fetch"},
+    {"path": "feature.ts", "kind": "config", "pattern": "endpoint"}
+  ],
+  "note": "Do not infer AWS_WRITE solely from S3-compatible URL syntax; provider-specific evidence is required."
+}
