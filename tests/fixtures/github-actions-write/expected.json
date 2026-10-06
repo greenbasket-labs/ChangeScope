@@ -1,0 +1,7 @@
+{
+  "classification": "CAPABILITY_ADDED",
+  "capabilities": ["REPOSITORY_READ", "PR_WRITE"],
+  "evidence": [
+    {"path": "workflow.yml", "kind": "permission", "pattern": "contents: write"}
+  ]
+}
