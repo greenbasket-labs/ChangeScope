@@ -13,10 +13,26 @@ export const EVIDENCE_KINDS = Object.freeze([
   "dockerfile","permission","secret_reference","command","infrastructure","history","rule"
 ]);
 
-export const EVIDENCE_QUALITIES = Object.freeze(["DIRECT","STRONG","INDIRECT","AMBIGUOUS"]);
-export const CONFIDENCE_LEVELS = Object.freeze(["HIGH","MEDIUM","LOW"]);
+export const EVIDENCE_QUALITIES = Object.freeze([
+  "DIRECT",
+  "STRONG",
+  "INDIRECT",
+  "AMBIGUOUS"
+]);
 
-const CAPABILITY_STATES = new Set(["added","removed","changed","unchanged"]);
+export const CONFIDENCE_LEVELS = Object.freeze([
+  "HIGH",
+  "MEDIUM",
+  "LOW"
+]);
+
+const CAPABILITY_STATES = new Set([
+  "added",
+  "removed",
+  "changed",
+  "unchanged"
+]);
+
 const CAPABILITY_SET = new Set(CAPABILITY_NAMES);
 const EVIDENCE_KIND_SET = new Set(EVIDENCE_KINDS);
 const QUALITY_SET = new Set(EVIDENCE_QUALITIES);
@@ -26,6 +42,7 @@ function requiredString(value, field) {
   if (typeof value !== "string" || value.trim() === "") {
     throw new TypeError(`${field} must be a non-empty string`);
   }
+
   return value;
 }
 
@@ -41,32 +58,77 @@ export function createEvidence(input) {
     explanation: requiredString(input.explanation, "evidence.explanation")
   };
 
-  if (!EVIDENCE_KIND_SET.has(evidence.kind)) throw new TypeError(`Unsupported evidence kind: ${evidence.kind}`);
-  if (!QUALITY_SET.has(evidence.quality)) throw new TypeError(`Unsupported evidence quality: ${evidence.quality}`);
-  if (!CONFIDENCE_SET.has(evidence.confidence)) throw new TypeError(`Unsupported evidence confidence: ${evidence.confidence}`);
+  if (!EVIDENCE_KIND_SET.has(evidence.kind)) {
+    throw new TypeError(
+      `Unsupported evidence kind: ${evidence.kind}`
+    );
+  }
+
+  if (!QUALITY_SET.has(evidence.quality)) {
+    throw new TypeError(
+      `Unsupported evidence quality: ${evidence.quality}`
+    );
+  }
+
+  if (!CONFIDENCE_SET.has(evidence.confidence)) {
+    throw new TypeError(
+      `Unsupported evidence confidence: ${evidence.confidence}`
+    );
+  }
 
   if (input.location !== undefined) {
-    if (!Number.isInteger(input.location.startLine) || input.location.startLine < 1) {
-      throw new TypeError("evidence.location.startLine must be a positive integer");
+    if (
+      !Number.isInteger(input.location.startLine) ||
+      input.location.startLine < 1
+    ) {
+      throw new TypeError(
+        "evidence.location.startLine must be a positive integer"
+      );
     }
-    if (input.location.endLine !== undefined &&
-        (!Number.isInteger(input.location.endLine) || input.location.endLine < input.location.startLine)) {
-      throw new TypeError("evidence.location.endLine must be >= startLine");
+
+    if (
+      input.location.endLine !== undefined &&
+      (
+        !Number.isInteger(input.location.endLine) ||
+        input.location.endLine < input.location.startLine
+      )
+    ) {
+      throw new TypeError(
+        "evidence.location.endLine must be >= startLine"
+      );
     }
+
     evidence.location = {
       startLine: input.location.startLine,
-      ...(input.location.endLine === undefined ? {} : { endLine: input.location.endLine }),
-      ...(input.location.startColumn === undefined ? {} : { startColumn: input.location.startColumn }),
-      ...(input.location.endColumn === undefined ? {} : { endColumn: input.location.endColumn })
+      ...(input.location.endLine === undefined
+        ? {}
+        : { endLine: input.location.endLine }),
+      ...(input.location.startColumn === undefined
+        ? {}
+        : { startColumn: input.location.startColumn }),
+      ...(input.location.endColumn === undefined
+        ? {}
+        : { endColumn: input.location.endColumn })
     };
   }
 
   if (input.capability !== undefined) {
-    if (!CAPABILITY_SET.has(input.capability)) throw new TypeError(`Unsupported capability: ${input.capability}`);
+    if (!CAPABILITY_SET.has(input.capability)) {
+      throw new TypeError(
+        `Unsupported capability: ${input.capability}`
+      );
+    }
+
     evidence.capability = input.capability;
   }
 
-  if (input.commitSha !== undefined) evidence.commitSha = requiredString(input.commitSha, "evidence.commitSha");
+  if (input.commitSha !== undefined) {
+    evidence.commitSha = requiredString(
+      input.commitSha,
+      "evidence.commitSha"
+    );
+  }
+
   return Object.freeze(evidence);
 }
 
@@ -76,19 +138,56 @@ export function createCapability(input) {
     category: requiredString(input.category, "capability.category"),
     name: input.name,
     state: input.state,
-    evidence: Array.isArray(input.evidence) ? input.evidence : [],
-    ...(input.scope === undefined ? {} : { scope: input.scope }),
-    ...(input.properties === undefined ? {} : { properties: input.properties })
+    evidence: Array.isArray(input.evidence)
+      ? input.evidence
+      : [],
+    confidence: input.confidence,
+    quality: input.quality,
+    ...(input.scope === undefined
+      ? {}
+      : { scope: input.scope }),
+    ...(input.properties === undefined
+      ? {}
+      : { properties: input.properties })
   };
 
-  if (!CAPABILITY_SET.has(capability.name)) throw new TypeError(`Unsupported capability name: ${capability.name}`);
-  if (!CAPABILITY_STATES.has(capability.state)) throw new TypeError(`Unsupported capability state: ${capability.state}`);
-  if (capability.evidence.length === 0 && capability.state !== "unchanged") {
-    throw new TypeError("Non-unchanged capabilities require evidence");
+  if (!CAPABILITY_SET.has(capability.name)) {
+    throw new TypeError(
+      `Unsupported capability name: ${capability.name}`
+    );
   }
+
+  if (!CAPABILITY_STATES.has(capability.state)) {
+    throw new TypeError(
+      `Unsupported capability state: ${capability.state}`
+    );
+  }
+
+  if (!CONFIDENCE_SET.has(capability.confidence)) {
+    throw new TypeError(
+      `Unsupported capability confidence: ${capability.confidence}`
+    );
+  }
+
+  if (!QUALITY_SET.has(capability.quality)) {
+    throw new TypeError(
+      `Unsupported capability quality: ${capability.quality}`
+    );
+  }
+
+  if (
+    capability.evidence.length === 0 &&
+    capability.state !== "unchanged"
+  ) {
+    throw new TypeError(
+      "Non-unchanged capabilities require evidence"
+    );
+  }
+
   for (const evidence of capability.evidence) {
-    if (!evidence || typeof evidence.id !== "string") throw new TypeError("capability evidence must contain evidence records");
+    createEvidence(evidence);
   }
+
   return Object.freeze(capability);
 }
 
@@ -106,21 +205,49 @@ function comparable(capability) {
 }
 
 export function calculateDelta(baseCapabilities, headCapabilities) {
-  const base = new Map(baseCapabilities.map((capability) => [capabilityKey(capability), capability]));
-  const head = new Map(headCapabilities.map((capability) => [capabilityKey(capability), capability]));
+  const base = new Map(
+    baseCapabilities.map((capability) => [
+      capabilityKey(capability),
+      capability
+    ])
+  );
+
+  const head = new Map(
+    headCapabilities.map((capability) => [
+      capabilityKey(capability),
+      capability
+    ])
+  );
+
   const delta = [];
 
   for (const [id, headCapability] of head) {
     const baseCapability = base.get(id);
+
     if (!baseCapability) {
-      delta.push({ ...headCapability, state: "added" });
-    } else if (comparable(baseCapability) !== comparable(headCapability)) {
-      delta.push({ ...headCapability, state: "changed", previous: baseCapability });
+      delta.push({
+        ...headCapability,
+        state: "added"
+      });
+    } else if (
+      comparable(baseCapability) !== comparable(headCapability)
+    ) {
+      delta.push({
+        ...headCapability,
+        state: "changed",
+        previous: baseCapability
+      });
     }
   }
 
   for (const [id, baseCapability] of base) {
-    if (!head.has(id)) delta.push({ ...baseCapability, state: "removed" });
+    if (!head.has(id)) {
+      delta.push({
+        ...baseCapability,
+        state: "removed"
+      });
+    }
   }
+
   return delta;
 }
