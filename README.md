@@ -14,13 +14,13 @@ ChangeScope detects meaningful **capability changes** between a repository's bas
 
 ## Status
 
-**Stage:** Specification / validation
+**Stage:** V0 empirical validation
 
 **Implementation status:** Not started
 
 **Repository:** `greenbasket-labs/ChangeScope`
 
-The repository is intentionally starting from an empty implementation. The specification must be validated against real GitHub pull requests before substantial code is written.
+The repository is intentionally starting from an empty implementation. V0 empirical validation is now underway: real GitHub pull requests are being studied before substantial code is written. See `VALIDATION.md` for recorded observations.
 
 ---
 
