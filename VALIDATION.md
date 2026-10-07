@@ -596,3 +596,67 @@ The existing specification already requires:
 - repository-level analysis.
 
 The case should therefore remain validation evidence and become a fixture candidate only after the broader sample supports the pattern.
+
+---
+
+## 26. Permission scope narrowing without losing the capability
+
+A second targeted case tests whether ChangeScope can distinguish a **capability restriction** from a capability removal when the operation remains reachable but authority is narrowed to the job that actually needs it.
+
+### Release workflow write permission narrowed
+
+**Repository:** pickforge/pickcheck  
+**PR:** #22  
+**URL:** https://github.com/pickforge/pickcheck/pull/22
+
+The merged PR changes the release workflow so that:
+
+- the workflow defaults to `contents: read`;
+- only the `host` release job receives `contents: write`;
+- the two build jobs no longer receive the write-capable `GH_TOKEN`;
+- `plan` and `announce` retain read-only access;
+- the `host` job still performs the release/upload operations.
+
+GitHub's workflow model confirms that `permissions` can be scoped at workflow or job level, and that specifying permissions changes the effective `GITHUB_TOKEN` access for the relevant job. `contents: write` permits repository-content writes, while unspecified permissions become `none` when permissions are explicitly defined. citeturn0search4
+
+### Preliminary classification
+
+```text
+CAPABILITY_CHANGED
+
+BEFORE
+multiple release-related jobs receive write authority
+
+AFTER
+only the reachable release host job receives write authority
+
+Capability authority remains for release execution,
+but its scope is narrowed.
+```
+
+This is not correctly classified as `NO_CAPABILITY_CHANGE` merely because the final release job still has `contents: write`, and it is not correctly classified as complete `REPOSITORY_WRITE` removal because the release operation remains reachable.
+
+### Validation lesson
+
+ChangeScope must model **scope** as part of effective capability:
+
+```text
+AUTHORITY + OPERATION + REACHABILITY + SCOPE
+= EFFECTIVE CAPABILITY
+```
+
+A useful detector should therefore distinguish:
+
+```text
+capability removed
+        ≠
+capability retained but restricted
+```
+
+This is particularly important for CI because GitHub permits permissions at workflow and job scope. citeturn0search8
+
+### V0 decision
+
+No SPEC change is justified by this case. The existing `CHANGED` state, affected scope, evidence references, and blast-radius model already provide the required concepts.
+
+Source: the merged PR's description and workflow-scope change. The PR itself states that a real tag run was still pending, so this validation records the authorization-scope transition rather than claiming a successful release execution.
