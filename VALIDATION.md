@@ -502,3 +502,97 @@ tests/capability-core.test.mjs covers:
 The GitHub-connected environment used to edit the repository does not provide a local repository checkout for executing node --test, so runtime execution remains a local validation step rather than being claimed here as passed.
 
 The project therefore remains at V0 empirical validation. The next gate is to execute the deterministic tests locally, reconcile any failures, then expand the real-PR sample toward the planned 50–100 cases.
+
+---
+
+## 25. Capability removal through operation removal
+
+A targeted validation case was added to test the opposite direction of capability change: a powerful permission/access path exists in the base system, but the reachable operation is removed in the head.
+
+### Docker socket control removed
+
+**Repository:** sosjalapeno/alacarte  
+**PR:** #34  
+**URL:** https://github.com/sosjalapeno/alacarte/pull/34
+
+The patch removes the web container's direct Docker daemon path.
+
+Direct patch evidence includes:
+
+- `docker-compose.yml` removes the `/var/run/docker.sock` bind mount from the web service.
+- `backend/lib/wrapperLogin.mjs` removes the `dockerode` dependency and Docker container creation/inspection/control logic.
+- The replacement path uses an internal HTTP supervisor instead of direct Docker daemon operations.
+
+The relevant transition is:
+
+```text
+BASE
+web container
+  ↓
+host Docker socket
+  ↓
+Docker daemon control
+  ↓
+arbitrary container lifecycle operations
+
+HEAD
+web container
+  ↓
+internal HTTP supervisor
+  ↓
+wrapper-specific control
+```
+
+### Preliminary classification
+
+```text
+CAPABILITY_REMOVED / RESTRICTED
+
+Existing Docker control capability
+        ↓
+direct host Docker-daemon control removed
+
+Boundary:
+web container → host Docker daemon
+        ↓
+web container → internal supervisor
+```
+
+This is stronger evidence than the PR title or security description because the repository diff itself removes the socket mount and the Docker API control path.
+
+### Validation lesson
+
+A detector must not conclude:
+
+> `docker.sock` is still somewhere in the repository, therefore Docker control still exists.
+
+It must evaluate the **reachable operation path**.
+
+This strengthens the current effective-capability model:
+
+```text
+AUTHORITY
++
+OPERATION
++
+REACHABILITY
++
+SCOPE
+=
+EFFECTIVE CAPABILITY
+```
+
+It also provides a direct negative-direction test for the existing Capability Delta model: capability removal/restriction is as important as capability addition.
+
+### V0 decision
+
+No SPEC change is justified by this case.
+
+The existing specification already requires:
+
+- removed capabilities to be reported;
+- evidence-backed findings;
+- scope/boundary consideration;
+- repository-level analysis.
+
+The case should therefore remain validation evidence and become a fixture candidate only after the broader sample supports the pattern.
