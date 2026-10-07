@@ -737,6 +737,6 @@ This validates another guard:
 
 A detector that only compares `permissions:` blocks would miss this material boundary change.
 
-GitHub documents that workflow permissions are affected by repository defaults, workflow-level permissions, job-level permissions, and fork-trigger behavior; fork PR workflows normally have write permissions reduced to read-only unless the repository explicitly enables write tokens. citeturn0search10turn0search11
+GitHub documents that workflow permissions are affected by repository defaults, workflow-level permissions, job-level permissions, and fork-trigger behavior; fork PR workflows normally have write permissions reduced to read-only unless the repository explicitly enables write tokens.
 
 **No SPEC change proposed.** The case fits the existing authority + operation + reachability + scope model.
