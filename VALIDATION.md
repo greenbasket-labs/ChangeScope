@@ -660,3 +660,51 @@ This is particularly important for CI because GitHub permits permissions at work
 No SPEC change is justified by this case. The existing `CHANGED` state, affected scope, evidence references, and blast-radius model already provide the required concepts.
 
 Source: the merged PR's description and workflow-scope change. The PR itself states that a real tag run was still pending, so this validation records the authorization-scope transition rather than claiming a successful release execution.
+
+---
+
+## 27. Unreachable capability-looking workflow removal
+
+**Repository:** Zenimac021/Zenimac021  
+**PR:** #11  
+**URL:** https://github.com/Zenimac021/Zenimac021/pull/11
+
+The PR deletes an AWS ECS deployment workflow that looked capability-significant on inspection:
+
+- AWS credential configuration using repository secrets
+- ECR login
+- Docker build and push
+- ECS task-definition rendering
+- ECS deployment
+- production environment
+
+At first glance this could be classified as removal of AWS_DEPLOY, CI_EXECUTION, and related cloud capabilities.
+
+However, the repository and workflow context show an important counterexample:
+
+- the workflow was the unedited GitHub ECS template;
+- AWS region, ECR repository, ECS service, cluster, task-definition and container-name values were still placeholders;
+- the repository had no Dockerfile, ECS task definition, or other deployment assets;
+- the PR description states the workflow failed immediately and had no usable deployment path.
+
+### Validation result
+
+**NO_CAPABILITY_CHANGE for the effective system capability model.**
+
+The workflow contained capability-looking operations, but the deployment path was not actually reachable/configured in the repository.
+
+This validates an important guard:
+
+> **A capability-looking artifact is not enough. ChangeScope must evaluate effective reachability before reporting a capability delta.**
+
+This strengthens the distinction:
+
+artifact contains operation
+
+does not imply
+
+effective capability exists
+
+This is a useful false-positive test because a naive detector that maps AWS/ECS workflow syntax directly to AWS_DEPLOY would incorrectly report a capability removal.
+
+**No SPEC change proposed.** This is already consistent with the existing authority + operation + reachability + scope model.
