@@ -1009,3 +1009,27 @@ The meaningful delta is a new reachable **DEPLOYMENT** path to GitHub Pages, wit
 This is distinct from the AWS deployment cases: deployment authority can be introduced through a hosting-platform-specific permission and deployment action without AWS credentials or repository-content write access.
 
 **No SPEC change proposed.**
+
+
+---
+
+## 37. Workflow-dispatch authority requires Actions write permission
+
+**Repository:** projectbluefin/utah-packages  
+**PR:** #378
+
+The PR adds `actions: write` to the bot import/buildroot workflow and uses that authority to dispatch validation against the proposed PR head. The dispatched validation then runs with read-only contents/PR permissions; a separate reporting job can comment with `pull-requests: write`.
+
+### Validation result
+
+**CAPABILITY_ADDED — WORKFLOW_TRIGGER**
+
+The capability is established by the combination of:
+
+- `actions: write` authorization;
+- a reachable workflow-dispatch operation;
+- validation targeted at the newly opened bot PR.
+
+This distinguishes **workflow trigger authority** from the permissions of the workflow being triggered. The triggered workflow can remain read-only while the caller gains authority to start it.
+
+**No SPEC change proposed.**
