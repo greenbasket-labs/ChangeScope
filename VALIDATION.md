@@ -908,3 +908,30 @@ This validates a distinct **post-success chained capability**:
 The dry-run gate also means the capability's reachability depends on execution mode; ChangeScope should preserve that scope rather than describing every workflow invocation as a release creation.
 
 **No SPEC change proposed.**
+
+
+---
+
+## 34. Deployment authority split from artifact-building authority
+
+**Repository:** Jahid11978/jahid.ai  
+**PR:** #10  
+**URL:** https://github.com/Jahid11978/jahid.ai/pull/10
+
+The PR replaces a direct Cloudflare deployment workflow with a multi-stage promotion workflow. The new design separates build/attestation from the later promotion stage, with production requiring configured approvals and verified provenance/signature/SBOM evidence. The workflow also supports development, staging, canary, and production targets.
+
+### Validation result
+
+**CAPABILITY_CHANGED**
+
+The important change is the **authority boundary between build and promotion**, not simply the addition of deployment-related YAML.
+
+The resulting system can promote an already-built artifact through a controlled promotion path rather than directly deploying from the build job. Production promotion is additionally gated.
+
+This validates a new boundary:
+
+> **Capability scope can change when authority is moved between workflow stages, even when both the old and new workflows perform deployment-related work.**
+
+ChangeScope should therefore compare not only whether `DEPLOYMENT` exists, but **which stage holds the authority, what artifact it can act on, and what gates control that authority**.
+
+**No SPEC change proposed.**
