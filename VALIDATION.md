@@ -877,3 +877,34 @@ The capability is conditional and constrained by exact-head, authorship, update-
 GitHub documents `workflow_run` as a workflow event that can run after another workflow completes; this PR uses that context to move the merge decision to the default-branch workflow. citeturn0search4
 
 **No SPEC change proposed.**
+
+
+---
+
+## 33. Release creation becomes reachable only after successful package publication
+
+**Repository:** Leechael/pi-famulus  
+**PR:** #44  
+**URL:** https://github.com/Leechael/pi-famulus/pull/44
+
+The PR changes an existing npm release workflow so that, after a successful non-dry-run package publish, it creates a Git tag and GitHub Release. The release job changes `contents: read` to `contents: write` and the new step uses `GH_TOKEN` with GitHub API/tag/release operations. The step is explicitly gated by `DRY_RUN == false`.
+
+### Validation result
+
+**CAPABILITY_ADDED / CAPABILITY_CHANGED**
+
+Relevant capabilities:
+
+- `RELEASE_CREATE`
+- `REPOSITORY_WRITE`
+- `CI_EXECUTION`
+
+The new capability is not established by `contents: write` alone. The decisive evidence is the combination of the permission, the reachable GitHub API/tag operations, and the non-dry-run trigger condition.
+
+This validates a distinct **post-success chained capability**:
+
+> A workflow can acquire a new external/repository capability only on a later stage whose execution is conditional on an earlier successful operation.
+
+The dry-run gate also means the capability's reachability depends on execution mode; ChangeScope should preserve that scope rather than describing every workflow invocation as a release creation.
+
+**No SPEC change proposed.**
