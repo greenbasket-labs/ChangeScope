@@ -988,3 +988,24 @@ This validates a distinct composition case:
 ChangeScope must follow permission context across reusable-workflow boundaries rather than analyzing the called workflow in isolation.
 
 **No SPEC change proposed.**
+
+
+---
+
+## 36. GitHub Pages deployment capability via Pages-specific authorization
+
+**Repository:** uptide-dev/uptide-dev.github.io  
+**PR:** #1  
+**URL:** https://github.com/uptide-dev/uptide-dev.github.io/pull/1
+
+The merged PR introduces a GitHub Actions Pages deployment workflow using `upload-pages-artifact` and `deploy-pages`, triggered on changes to `main`. The deployment job uses `pages: write` and `id-token: write`; CI itself remains `contents: read`.
+
+### Validation result
+
+**CAPABILITY_ADDED**
+
+The meaningful delta is a new reachable **DEPLOYMENT** path to GitHub Pages, with Pages-specific authorization and an OIDC token for the deployment action.
+
+This is distinct from the AWS deployment cases: deployment authority can be introduced through a hosting-platform-specific permission and deployment action without AWS credentials or repository-content write access.
+
+**No SPEC change proposed.**
