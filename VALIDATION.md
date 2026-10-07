@@ -963,3 +963,28 @@ This validates a distinct **side-effect capability**:
 > Automation that only reports or reconciles state can still introduce a material external write capability even when it cannot deploy or modify repository contents.
 
 **No SPEC change proposed.**
+
+
+---
+
+## 36. Reusable workflow grants side-effect authority to the caller job
+
+**Repository:** riles22/wow-class-tracker  
+**PR:** #93  
+**URL:** https://github.com/riles22/wow-class-tracker/pull/93
+
+The PR adds a reusable `workflow_call`-style alert workflow and caller jobs that request `issues: write` only for the final alert step. The alert workflow has top-level empty permissions and performs the issue comment using the caller's granted authority.
+
+### Validation result
+
+**CAPABILITY_CHANGED**
+
+The important boundary is **permission inheritance into a reusable workflow**: the reusable workflow itself does not independently create broad authority; the caller job supplies the issue-writing permission.
+
+This validates a distinct composition case:
+
+> **Effective capability can emerge at the boundary between a caller job's permissions and a reusable workflow's operation.**
+
+ChangeScope must follow permission context across reusable-workflow boundaries rather than analyzing the called workflow in isolation.
+
+**No SPEC change proposed.**
