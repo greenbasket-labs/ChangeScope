@@ -819,3 +819,28 @@ effective capability
 GitHub's dependency-review documentation separately identifies dependency additions, removals, and updates; ChangeScope's job is different: determine whether the resulting software has a materially different effective capability. citeturn0search0turn0search7
 
 **No SPEC change proposed.**
+
+
+---
+
+## 31. Gated deployment path with disabled activation
+
+**Repository:** Jesssullivan/jesssullivan.github.io  
+**PR:** #263  
+**URL:** https://github.com/Jesssullivan/jesssullivan.github.io/pull/263
+
+This draft PR adds a dedicated Cloudflare Pages shadow-publish workflow triggered only by `repository_dispatch`. The workflow contains deployment logic and a Cloudflare credentialed publish stage, but it explicitly fails closed unless `BLOG_TSS_PUBLISH_ENABLED=true`; the repository variable is currently absent, so the default is false. The workflow also has no automatic trigger.
+
+### Validation result
+
+**AMBIGUOUS / NOT EFFECTIVE YET**
+
+The PR introduces deployment machinery, but the repository state shown in the PR does not establish an active deployment capability: activation requires an external repository variable and an explicit dispatch.
+
+This is a new validation boundary:
+
+> **A reachable workflow definition is not necessarily an effective capability when an explicit activation gate and required external configuration are both absent.**
+
+ChangeScope should preserve the evidence for the deployment path and its gate, but should not report an unconditional `DEPLOYMENT` delta from the workflow code alone.
+
+**No SPEC change proposed.**
