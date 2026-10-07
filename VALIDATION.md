@@ -935,3 +935,31 @@ This validates a new boundary:
 ChangeScope should therefore compare not only whether `DEPLOYMENT` exists, but **which stage holds the authority, what artifact it can act on, and what gates control that authority**.
 
 **No SPEC change proposed.**
+
+
+---
+
+## 35. Scheduled automation gains issue-writing capability without deployment authority
+
+**Repository:** clearmeasure-aisf-sample-apps/basic-environment-octopus-codefresh  
+**PR:** #92  
+**URL:** https://github.com/clearmeasure-aisf-sample-apps/basic-environment-octopus-codefresh/pull/92
+
+The PR adds a scheduled/manual GitHub Actions workflow that reads release pin history and opens, comments on, or closes GitHub Issues. Its token has `contents: read` and `issues: write`; it has no secrets and no deployment/cloud credentials.
+
+### Validation result
+
+**CAPABILITY_ADDED**
+
+Relevant capabilities:
+
+- `ISSUE_WRITE`
+- `CI_EXECUTION`
+
+The workflow deliberately has no deployment path. Its new power is the ability for scheduled automation to mutate GitHub Issues.
+
+This validates a distinct **side-effect capability**:
+
+> Automation that only reports or reconciles state can still introduce a material external write capability even when it cannot deploy or modify repository contents.
+
+**No SPEC change proposed.**
