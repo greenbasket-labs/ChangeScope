@@ -779,3 +779,43 @@ multiple independent capability deltas
 The case also reinforces that one PR can contain additions, removals and material changes simultaneously.
 
 **No SPEC change proposed.**
+
+---
+
+## 30. Dependency exposes capability but repository does not consume it
+
+**Repository:** Trustroots/trustroots  
+**PR:** #3023  
+**URL:** https://github.com/Trustroots/trustroots/pull/3023
+
+This Dependabot PR upgrades `actions/github-script` from v8 to v9. The release notes describe a new `getOctokit` factory that can create additional authenticated clients with different tokens, including GitHub App tokens and cross-organization access.
+
+However, inspection of the actual PR diff shows only action-version changes. The repository does not add a call to the new `getOctokit` API in this PR.
+
+### Validation result
+
+**NO_CAPABILITY_CHANGE**
+
+The dependency/action now exposes a more powerful API surface, but that power is not consumed by the repository's changed workflow code.
+
+This validates the dependency guard:
+
+> **A dependency's available capability is not automatically the application's effective capability.**
+
+Required evidence remains:
+
+```text
+dependency/API availability
+        +
+actual repository consumption
+        +
+reachable operation
+        +
+authority
+        ↓
+effective capability
+```
+
+GitHub's dependency-review documentation separately identifies dependency additions, removals, and updates; ChangeScope's job is different: determine whether the resulting software has a materially different effective capability. citeturn0search0turn0search7
+
+**No SPEC change proposed.**
