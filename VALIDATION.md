@@ -1033,3 +1033,27 @@ The capability is established by the combination of:
 This distinguishes **workflow trigger authority** from the permissions of the workflow being triggered. The triggered workflow can remain read-only while the caller gains authority to start it.
 
 **No SPEC change proposed.**
+
+
+---
+
+## 38. Trusted publishing creates a new external release/deployment path
+
+**Repository:** BasileChretien/manuscript-guard  
+**PR:** #186
+
+The merged PR adds an automated PyPI publishing workflow. The publish job uses GitHub OIDC via `id-token: write`, a protected `pypi` environment, and uploads the built distribution through PyPI trusted publishing. The release job separately gets `contents: write` to create the tag and GitHub Release.
+
+### Validation result
+
+**CAPABILITY_ADDED — DEPLOYMENT / SEND_EXTERNAL_DATA**
+
+The important evidence is the complete reachable chain:
+
+`push/version change → build → protected publish job → OIDC authorization → PyPI upload`.
+
+This is stronger than detecting `id-token: write` alone: the token permission is supporting evidence, while the actual external publishing operation establishes the capability.
+
+It also validates that one PR can create **two distinct external side effects**: GitHub release creation and package publication.
+
+**No SPEC change proposed.**
