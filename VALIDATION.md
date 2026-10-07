@@ -708,3 +708,35 @@ effective capability exists
 This is a useful false-positive test because a naive detector that maps AWS/ECS workflow syntax directly to AWS_DEPLOY would incorrectly report a capability removal.
 
 **No SPEC change proposed.** This is already consistent with the existing authority + operation + reachability + scope model.
+
+---
+
+## 28. Trigger-context changes alter effective capability
+
+**Repository:** iory/rcb4  
+**PR:** #230  
+**URL:** https://github.com/iory/rcb4/pull/230
+
+This merged PR changes a hardware-test workflow from `pull_request_target` to `pull_request` and explicitly sets `contents: read`. It also separates privileged post-processing into a `workflow_run` workflow that uploads artifacts to Google Drive and comments on the PR.
+
+The important capability change is not simply the YAML permission line. The trigger context changes what fork PR code can reach:
+
+- the previous `pull_request_target` path could expose a write-capable repository token and a Google Drive service-account secret to the test job if unsafe checkout was enabled;
+- the new `pull_request` path runs fork code with a read-only token and no repository secrets;
+- the privileged `workflow_run` path does not check out or execute PR code and performs the external upload separately.
+
+### Validation result
+
+**CAPABILITY_CHANGED / RESTRICTED**
+
+The effective boundary for untrusted fork code is materially reduced even though the repository still contains privileged automation elsewhere.
+
+This validates another guard:
+
+> **Effective capability depends on trigger context as well as declared permissions.**
+
+A detector that only compares `permissions:` blocks would miss this material boundary change.
+
+GitHub documents that workflow permissions are affected by repository defaults, workflow-level permissions, job-level permissions, and fork-trigger behavior; fork PR workflows normally have write permissions reduced to read-only unless the repository explicitly enables write tokens. citeturn0search10turn0search11
+
+**No SPEC change proposed.** The case fits the existing authority + operation + reachability + scope model.
