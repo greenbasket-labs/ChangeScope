@@ -740,3 +740,42 @@ A detector that only compares `permissions:` blocks would miss this material bou
 GitHub documents that workflow permissions are affected by repository defaults, workflow-level permissions, job-level permissions, and fork-trigger behavior; fork PR workflows normally have write permissions reduced to read-only unless the repository explicitly enables write tokens.
 
 **No SPEC change proposed.** The case fits the existing authority + operation + reachability + scope model.
+
+---
+
+## 29. Compound add/remove delta in one PR
+
+**Repository:** Heathton/ScrollKeeper  
+**PR:** #11  
+**URL:** https://github.com/Heathton/ScrollKeeper/pull/11
+
+This merged PR changes several capability boundaries at once:
+
+- removes the Docker CLI and Docker-socket manager from the bot deployment;
+- changes local inference to OpenAI-compatible HTTP endpoints for chat, embeddings, and speech-to-text;
+- adds a tagged GitHub Actions workflow that builds and pushes images to GHCR;
+- adds `packages: write` to the publishing workflow.
+
+### Validation result
+
+**COMPOUND CAPABILITY DELTA**
+
+At least one existing execution boundary is removed/restricted while other capabilities are added or changed. The current vocabulary supports reporting the external HTTP and execution-related evidence, while `packages: write` remains an authorization surface outside the current vocabulary and should not be invented into another capability.
+
+This is an important V0 test because the analyzer must not collapse the PR into a single label such as `security change` or `deployment change`.
+
+Expected reasoning:
+
+```text
+remove/restrict Docker control
+        +
+add external HTTP inference paths
+        +
+add CI image publishing path
+        ↓
+multiple independent capability deltas
+```
+
+The case also reinforces that one PR can contain additions, removals and material changes simultaneously.
+
+**No SPEC change proposed.**
