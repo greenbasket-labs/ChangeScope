@@ -844,3 +844,36 @@ This is a new validation boundary:
 ChangeScope should preserve the evidence for the deployment path and its gate, but should not report an unconditional `DEPLOYMENT` delta from the workflow code alone.
 
 **No SPEC change proposed.**
+
+
+---
+
+## 32. Workflow gains conditional PR merge authority
+
+**Repository:** framerslab/agentos-extensions  
+**PR:** #56  
+**URL:** https://github.com/framerslab/agentos-extensions/pull/56
+
+The PR changes Dependabot automation from a `pull_request` workflow that could not merge with its read-only token to a `workflow_run` workflow on the default branch. The new workflow explicitly requests `contents: write` and `pull-requests: write`, verifies the exact tested head, checks Dependabot authorship/update type/reviews/checks, then executes `gh pr merge --match-head-commit`.
+
+### Validation result
+
+**CAPABILITY_ADDED**
+
+Relevant capabilities:
+
+- `PR_MERGE`
+- `REPOSITORY_WRITE` as supporting authorization/effective repository write authority
+- `CI_EXECUTION` as the automation path
+
+The important new boundary is not merely the permission declaration. The workflow contains a reachable merge operation and uses the granted authority to perform it.
+
+This validates a distinct case:
+
+> **Automation can gain a capability by changing the execution context in which an existing operation becomes authorized and reachable.**
+
+The capability is conditional and constrained by exact-head, authorship, update-type, review, and check gates, but the resulting system can now autonomously merge qualifying pull requests.
+
+GitHub documents `workflow_run` as a workflow event that can run after another workflow completes; this PR uses that context to move the merge decision to the default-branch workflow. citeturn0search4
+
+**No SPEC change proposed.**
